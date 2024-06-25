@@ -1,0 +1,8 @@
+/packages/
+.vs/
+x64/
+~AutoRecover.*.vcxproj
+bin
+dist
+RDAGmining-linux-x64
+RDAGmining-win-x64
