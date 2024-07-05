@@ -7,26 +7,26 @@
 
 #include <intrin.h>
 
-#include "console_logging.h"
+#include "logging.h"
 
 // frequency of CPU clock
 static unsigned long long frequency;
 
 
-static void initTimeStampCounter()
+void initTimeStampCounter()
 {
     int cpuInfo[4];
     __cpuid(cpuInfo, 0x15);
     if (cpuInfo[2] == 0 || cpuInfo[1] == 0 || cpuInfo[0] == 0)
     {
-        logToConsole(L"Theoretical TSC frequency = n/a.");
+        log(L"Theoretical TSC frequency = n/a.");
     }
     else
     {
         setText(message, L"Theoretical TSC frequency = ");
         appendNumber(message, ((unsigned long long)cpuInfo[1]) * cpuInfo[2] / cpuInfo[0], TRUE);
         appendText(message, L" Hz.");
-        logToConsole(message);
+        log(message);
     }
 
     frequency = __rdtsc();
@@ -35,5 +35,5 @@ static void initTimeStampCounter()
     setText(message, L"Practical TSC frequency = ");
     appendNumber(message, frequency, TRUE);
     appendText(message, L" Hz.");
-    logToConsole(message);
+    log(message);
 }

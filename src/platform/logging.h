@@ -2,12 +2,12 @@
 
 #include "uefi.h"
 
-static bool disableConsoleLogging = false;
+static bool disableLogging = false;
 
 // message buffers:
 // - message is for public use
-// - timestampedMessage is used internally by logToConsole()
-// CAUTION: not thread-safe, no buffer overflow protection!!!
+// - timestampedMessage is used internally by log()
+// CAUTION: not thread-safe, no beffer overflow protection!!!
 static CHAR16 message[16384], timestampedMessage[16384];
 
 
@@ -18,29 +18,27 @@ static CHAR16 message[16384], timestampedMessage[16384];
 // Output to console on no-UEFI platform
 static inline void outputStringToConsole(CHAR16* str)
 {
-    wprintf(L"%ls", str);
+    std::wprintf(L"%ls", str);
 }
 
 // Log message to console (with line break) on non-UEFI platform
-static void logToConsole(const CHAR16* message)
+static void log(const CHAR16* message)
 {
-    if (disableConsoleLogging)
+    if (disableLogging)
         return;
-    wprintf(L"%ls\n", message);
+    std::wprintf(L"%ls\n", message);
 }
 
 #else
 
 // Output to console on UEFI platform
-// CAUTION: Can only be called from main processor thread. Otherwise there is a high risk of crashing.
 static inline void outputStringToConsole(CHAR16* str)
 {
     st->ConOut->OutputString(st->ConOut, str);
 }
 
 // Log message to console (with line break) on UEFI platform (defined in rdag.cpp due to dependencies on time and rdag status)
-// CAUTION: Can only be called from main processor thread. Otherwise there is a high risk of crashing.
-static void logToConsole(const CHAR16* message);
+static void log(const CHAR16* message);
 
 #endif
 
@@ -151,7 +149,7 @@ static void appendErrorStatus(CHAR16* dst, const EFI_STATUS status)
     }
 }
 
-static void logStatusToConsole(const CHAR16* message, const EFI_STATUS status, const unsigned int lineNumber)
+static void logStatus(const CHAR16* message, const EFI_STATUS status, const unsigned int lineNumber)
 {
     setText(::message, message);
     appendText(::message, L" (");
@@ -159,14 +157,5 @@ static void logStatusToConsole(const CHAR16* message, const EFI_STATUS status, c
     appendText(::message, L") near line ");
     appendNumber(::message, lineNumber, FALSE);
     appendText(::message, L"!");
-    logToConsole(::message);
-}
-
-// Count characters before terminating NULL
-static unsigned int stringLength(const CHAR16* str)
-{
-    unsigned int l = 0;
-    while (str[l] != 0)
-        l++;
-    return l;
+    log(::message);
 }
