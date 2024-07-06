@@ -28,17 +28,60 @@ Rdag Node Source Code - this repository contains the source code of a full rdag 
 
 ## Prerequisites
 To run a rdag node, you need the following spec:
-- Bare Metal Server/Computer with at least 8 Cores 
-- At least 300GB of RAM
+- Bare Metal Server/Computer with at least 4 Cores 
+- At least 8GB of RAM
+- At least 60GB of ssd
 - 2.5Gb/s synchronous internet connection
 - A USB Stick or SSD/HD attached to the Computer
 - UEFI Bios 
 
 
 
-The clock of the node needs to be in sync.
-We recommend to synchronize a Linux / Windows / MacOS machine with NTP permanently and run [`rdag-cli -synctime`](https://github.com/rdag/rdag-cli) from that machine regularly, for example once a day with a cronjob.
-
+## Node and Mining Pool Software Documentation
+### Overview
+This document outlines the functionalities and configurations for the combined node and mining pool software. This integration allows wallets and mining software to connect directly to a self-hosted node without needing additional synchronization.
+### Features
+#### 1. Full Block Node
+Wallets can connect directly to the full block node without the need for further synchronization. This connection is established using the following command:
+```
+--url [node_address:node_port]
+```
+#### 2. Mining Software Connection
+Similarly, the mining software connects to the node using the same command format:
+```
+--url [node_address:node_port]
+```
+#### 3. Configuration File
+Here is a detailed explanation of the configuration file required for setting up the node and mining pool:
+```
+{
+  "port": 3000,  // Node's external interface port
+  "tcp": 3001,   // TCP interface port
+  "ws": 3002,    // WebSocket interface port
+  "log": true,   // Enable logging
+  "isPool": true, // Enable mining pool. If disabled, mining software cannot connect to the node
+  "poolConfig": { // Mining pool configuration
+    "name": "myPool", // Name of the mining pool to be retained in the block
+    "model": "PPLNS", // Mining model: PPLNS or SOLO
+    "address": "ADDRESS", // Mining pool wallet address for receiving all rewards
+    "privateKey": "Wallet_private_key", // Wallet private key, obtainable from the wallet homepage
+    "fee": 1, // Mining pool fee percentage
+    "netFee": 500, // Transaction fee, must not be less than 500
+    "minPay": 1000000, // Minimum payment amount for payouts
+    "timePay": 10 // Payment interval in minutes
+  }
+}
+```
+#### 4. RPC Interfaces
+The node software provides several RPC interfaces for accessing data:
+```
+/node/getPoolStatus: Retrieves the status of the pool.
+/node/getPoolWorkers: Lists the miners connected to the pool.
+/node/getPoolBlocks: Fetches data for the blocks mined by the pool (last 100 blocks).
+/node/getPoolPayments: Provides the record of payments made by the pool (last 1000 transactions).
+```
+### Connection Setup
+To connect your wallet or mining software to the node, use the command format mentioned above with the specific node address and port configured in your setup.
 
 
 ## Limited Support
